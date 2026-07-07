@@ -1,4 +1,3 @@
-// src/routes/health.routes.ts
 import { Router } from 'express';
 import prisma from '../db/prisma.js';
 
@@ -11,8 +10,8 @@ const router = Router();
  *     summary: Проверка состояния сервера
  *     description: |
  *       Эндпоинт для проверки работоспособности сервера и подключения к базе данных.
- *       Используется для мониторинга и health checks.
- *       
+ *       Используется для мониторинга и health-check'ов.
+ *
  *       Возвращает:
  *       - Статус сервера (ok/error)
  *       - Время проверки
@@ -34,13 +33,13 @@ const router = Router();
  *                 timestamp:
  *                   type: string
  *                   format: date-time
- *                   example: "2024-01-15T10:30:00.000Z"
+ *                   example: "2026-01-15T10:30:00.000Z"
  *                 database:
  *                   type: string
  *                   enum: [connected]
  *                   example: connected
  *       500:
- *         description: Ошибка сервера или проблемы с БД
+ *         description: Ошибка сервера или проблема с подключением к БД
  *         content:
  *           application/json:
  *             schema:
@@ -53,7 +52,7 @@ const router = Router();
  *                 timestamp:
  *                   type: string
  *                   format: date-time
- *                   example: "2024-01-15T10:30:00.000Z"
+ *                   example: "2026-01-15T10:30:00.000Z"
  *                 database:
  *                   type: string
  *                   enum: [disconnected]

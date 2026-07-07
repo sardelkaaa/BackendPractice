@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import healthRoutes from './routes/health.routes.js';
 import { setupSwagger } from './utils/swagger.js';
 import authRoutes from './routes/auth.routes.js';
+import publicRoutes from './routes/public.routes.js';
+import cohortRoutes from './routes/cohort.routes.js';
 
 export const app = express();
 
@@ -16,5 +18,7 @@ setupSwagger(app);
 
 app.use('/health', healthRoutes)
 app.use('/auth', authRoutes);
+app.use('/public', publicRoutes);
+app.use('/admin/cohorts', cohortRoutes);
 
 app.use(errorHandler);

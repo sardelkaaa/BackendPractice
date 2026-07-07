@@ -6,18 +6,15 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Practice API',
+      title: 'API сервиса «Практика»',
       version: '1.0.0',
-      description: 'API для организации и сопровождения практики',
+      description:
+        'API для приёма заявок на практику, ведения документооборота и контроля задач практикантов по когортам.',
     },
     servers: [
       {
         url: 'http://localhost:4000',
-        description: 'Development server',
-      },
-      {
-        url: 'https://api.example.com',
-        description: 'Production server',
+        description: 'Локальный сервер разработки',
       },
     ],
     components: {
@@ -29,27 +26,62 @@ const options: swaggerJsdoc.Options = {
         },
       },
       schemas: {
-        HealthResponse: {
+        Cohort: {
           type: 'object',
           properties: {
-            status: {
+            id: {
               type: 'string',
-              enum: ['ok', 'error'],
-              description: 'Статус сервера',
             },
-            timestamp: {
+            name: {
+              type: 'string',
+              description: 'Название/год когорты, например "2026"',
+            },
+            applicationStart: {
               type: 'string',
               format: 'date-time',
-              description: 'Время проверки',
+              description: 'Начало приёма заявок',
             },
-            database: {
+            applicationEnd: {
               type: 'string',
-              enum: ['connected', 'disconnected'],
-              description: 'Статус подключения к базе данных',
+              format: 'date-time',
+              description: 'Окончание приёма заявок',
             },
-            error: {
+            practiceStart: {
               type: 'string',
-              description: 'Сообщение ошибки (если есть)',
+              format: 'date-time',
+              description: 'Начало практики',
+            },
+            practiceEnd: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Окончание практики',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+          },
+        },
+        CohortRole: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+            },
+            cohortId: {
+              type: 'string',
+            },
+            name: {
+              type: 'string',
+              description: 'Название роли/трека, например "Frontend"',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
             },
           },
         },
@@ -61,11 +93,11 @@ const options: swaggerJsdoc.Options = {
               properties: {
                 message: {
                   type: 'string',
-                  description: 'Сообщение об ошибке',
+                  description: 'Человекочитаемое описание ошибки',
                 },
                 code: {
                   type: 'string',
-                  description: 'Код ошибки',
+                  description: 'Машиночитаемый код ошибки (например, VALIDATION_ERROR)',
                 },
               },
             },
@@ -74,22 +106,16 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+  apis: ['./src/routes/*.ts'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
 export const setupSwagger = (app: Express) => {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-    explorer: true,
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Practice API Documentation',
-  }));
-  
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerSpec);
   });
-  
-  console.log('Swagger docs available at http://localhost:4000/api-docs');
+  console.log('Документация Swagger доступна по адресу http://localhost:4000/api-docs');
 };

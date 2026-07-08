@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { cohortController } from '../controllers/cohort.controller.js';
 import { cohortRoleController } from '../controllers/cohortRole.controller.js';
+import { testTaskController } from '../controllers/testTask.controller.js';
+import { applicationController } from '../controllers/application.controller.js';
+import { documentController } from '../controllers/document.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/requireRole.js';
 import { cohortContextMiddleware } from '../middleware/cohortContext.middleware.js';
@@ -318,5 +321,191 @@ router.get('/:cohortId/roles', cohortContextMiddleware, cohortRoleController.fin
  *         description: Требуется роль администратора
  */
 router.delete('/roles/:id', cohortContextMiddleware, cohortRoleController.delete);
+
+/**
+ * @swagger
+ * /admin/cohorts/{cohortId}/test-task:
+ *   post:
+ *     summary: Создать или обновить тестовое задание для когорты
+ *     tags: [Admin / Test Task]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [content]
+ *             properties:
+ *               content:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Тестовое задание сохранено
+ */
+router.post('/:cohortId/test-task', cohortContextMiddleware, testTaskController.upsert);
+
+/**
+ * @swagger
+ * /admin/cohorts/{cohortId}/test-task/publish:
+ *   patch:
+ *     summary: Опубликовать тестовое задание
+ *     tags: [Admin / Test Task]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Тестовое задание опубликовано, уведомления отправлены
+ */
+router.patch('/:cohortId/test-task/publish', cohortContextMiddleware, testTaskController.publish);
+
+/**
+ * @swagger
+ * /admin/cohorts/{cohortId}/applications:
+ *   get:
+ *     summary: Получить заявки когорты
+ *     tags: [Admin / Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Список заявок когорты
+ */
+router.get('/:cohortId/applications', cohortContextMiddleware, applicationController.findAllByCohort);
+
+/**
+ * @swagger
+ * /admin/applications/{id}/approve:
+ *   patch:
+ *     summary: Одобрить заявку
+ *     tags: [Admin / Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [roleId]
+ *             properties:
+ *               roleId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Заявка одобрена
+ */
+router.patch('/applications/:id/approve', applicationController.approve);
+
+/**
+ * @swagger
+ * /admin/applications/{id}/reject:
+ *   patch:
+ *     summary: Отклонить заявку
+ *     tags: [Admin / Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reviewComment:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Заявка отклонена
+ */
+router.patch('/applications/:id/reject', applicationController.reject);
+
+/**
+ * @swagger
+ * /admin/documents/{userId}/{cohortId}/review:
+ *   patch:
+ *     summary: Заполнить отзыв (админ)
+ *     tags: [Admin / Documents]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Отзыв сохранён
+ */
+router.patch('/documents/:userId/:cohortId/review', documentController.setReview);
+
+/**
+ * @swagger
+ * /admin/documents/{userId}/{cohortId}/approve-report:
+ *   patch:
+ *     summary: Подтвердить отчёт (админ)
+ *     tags: [Admin / Documents]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               approved:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Статус отчёта обновлён
+ */
+router.patch('/documents/:userId/:cohortId/approve-report', documentController.approveReport);
 
 export default router;

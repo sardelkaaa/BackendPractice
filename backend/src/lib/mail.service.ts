@@ -203,6 +203,102 @@ class MailService {
       text: `Поступил запрос на смену пароля для аккаунта ${user.email}.\nСсылка действует 1 час:\n${resetLink}\nЕсли вы не запрашивали смену пароля — проигнорируйте это письмо.`,
     };
   }
+
+  createTestTaskPublishedEmail(user: User): EmailOptions {
+    const dashboardLink = `${process.env.FRONTEND_URL}/dashboard`;
+
+    const bodyHtml = `
+      <p style="margin:0 0 14px 0;">Для когорты, в которую вы подали заявку, опубликовано тестовое задание.</p>
+      <p style="margin:0;">Перейдите в личный кабинет, чтобы ознакомиться с ним.</p>
+    `;
+
+    return {
+      to: user.email,
+      subject: 'Опубликовано тестовое задание — Практика',
+      html: renderLayout({
+        eyebrow: 'Тестовое задание',
+        title: 'Опубликовано тестовое задание',
+        bodyHtml,
+        actionLabel: 'Перейти в кабинет',
+        actionUrl: dashboardLink,
+      }),
+      text: `Для когорты, в которую вы подали заявку, опубликовано тестовое задание.\nПерейдите в личный кабинет: ${dashboardLink}`,
+    };
+  }
+
+  createApplicationApprovedEmail(user: User): EmailOptions {
+    const dashboardLink = `${process.env.FRONTEND_URL}/dashboard`;
+
+    const bodyHtml = `
+      <p style="margin:0 0 14px 0;">Ваша заявка на практику одобрена.</p>
+      <p style="margin:0;">В личном кабинете вам доступны документы и задачи.</p>
+    `;
+
+    return {
+      to: user.email,
+      subject: 'Заявка одобрена — Практика',
+      html: renderLayout({
+        eyebrow: 'Заявка одобрена',
+        title: 'Заявка на практику одобрена',
+        bodyHtml,
+        actionLabel: 'Открыть кабинет',
+        actionUrl: dashboardLink,
+      }),
+      text: `Ваша заявка на практику одобрена.\nВ личном кабинете вам доступны документы и задачи: ${dashboardLink}`,
+    };
+  }
+
+  createApplicationRejectedEmail(user: User, reviewComment?: string): EmailOptions {
+    const dashboardLink = `${process.env.FRONTEND_URL}/dashboard`;
+
+    const bodyHtml = `
+      <p style="margin:0 0 14px 0;">Ваша заявка на практику отклонена.</p>
+      ${reviewComment ? `<p style="margin:0;">Комментарий: ${reviewComment}</p>` : ''}
+    `;
+
+    return {
+      to: user.email,
+      subject: 'Заявка отклонена — Практика',
+      html: renderLayout({
+        eyebrow: 'Заявка отклонена',
+        title: 'Заявка на практику отклонена',
+        bodyHtml,
+        actionLabel: 'Открыть кабинет',
+        actionUrl: dashboardLink,
+      }),
+      text: `Ваша заявка на практику отклонена.${reviewComment ? `\nКомментарий: ${reviewComment}` : ''}\nПерейти: ${dashboardLink}`,
+    };
+  }
+
+  createDocumentReadyEmail(user: User, documentType: string): EmailOptions {
+    const dashboardLink = `${process.env.FRONTEND_URL}/dashboard`;
+
+    const documentLabels: Record<string, string> = {
+      'individual-task': 'Индивидуальное задание',
+      'title-page': 'Титульный лист',
+      'review': 'Отзыв',
+    };
+
+    const label = documentLabels[documentType] || documentType;
+
+    const bodyHtml = `
+      <p style="margin:0 0 14px 0;">Документ <strong>${label}</strong> готов к скачиванию.</p>
+      <p style="margin:0;">Вы можете скачать его в личном кабинете.</p>
+    `;
+
+    return {
+      to: user.email,
+      subject: `${label} готов — Практика`,
+      html: renderLayout({
+        eyebrow: 'Документ готов',
+        title: label,
+        bodyHtml,
+        actionLabel: 'Перейти в кабинет',
+        actionUrl: dashboardLink,
+      }),
+      text: `Документ "${label}" готов к скачиванию.\nПерейти: ${dashboardLink}`,
+    };
+  }
 }
 
 export const mailService = new MailService();

@@ -1,5 +1,6 @@
 // src/services/cohort.service.ts
 import { cohortRepository } from '../repositories/cohort.repository.js';
+import { surveyFieldRepository } from '../repositories/surveyField.repository.js';
 import { ValidationError, NotFoundError, ConflictError } from '../errors/index.js';
 
 export const cohortService = {
@@ -39,6 +40,18 @@ export const cohortService = {
       practiceStart,
       practiceEnd,
     });
+
+    // Clone survey fields from previous cohort or create defaults
+    const previousCohorts = await cohortRepository.findAll();
+    const sourceCohort = previousCohorts.find((c) => c.id !== cohort.id);
+
+    if (sourceCohort) {
+      await surveyFieldRepository.cloneFromCohort(sourceCohort.id, cohort.id);
+    } else {
+      // First cohort in the system — create default fields
+      // Roles don't exist yet, so options for "Желаемая роль/трек" is left empty
+      await surveyFieldRepository.createDefaults(cohort.id, '');
+    }
 
     return cohort;
   },

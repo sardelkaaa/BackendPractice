@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { cohortController } from '../controllers/cohort.controller.js';
+import { surveyController } from '../controllers/survey.controller.js';
 
 const router = Router();
 
@@ -25,5 +26,34 @@ const router = Router();
  *         description: Сейчас нет когорты с открытым приёмом заявок
  */
 router.get('/cohorts/active', cohortController.findActive);
+
+/**
+ * @swagger
+ * /public/cohorts/{id}/survey:
+ *   get:
+ *     summary: Получить поля анкеты для когорты
+ *     description: |
+ *       Возвращает список полей анкеты для указанной когорты.
+ *       Эндпоинт публичный — авторизация не требуется.
+ *     tags: [Public]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Список полей анкеты
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/SurveyField'
+ *       404:
+ *         description: Когорта не найдена
+ */
+router.get('/cohorts/:id/survey', surveyController.findByCohort);
 
 export default router;

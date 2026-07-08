@@ -66,7 +66,7 @@ router.get('/my', applicationController.getMyApplications);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Объект { label: value } из последней заявки
+ *         description: 'Объект { label: value } из последней заявки'
  */
 router.get('/prefill', applicationController.getPrefill);
 

@@ -4,6 +4,7 @@ import { cohortRoleController } from '../controllers/cohortRole.controller.js';
 import { testTaskController } from '../controllers/testTask.controller.js';
 import { applicationController } from '../controllers/application.controller.js';
 import { documentController } from '../controllers/document.controller.js';
+import { adminOverviewController } from '../controllers/adminOverview.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/requireRole.js';
 import { cohortContextMiddleware } from '../middleware/cohortContext.middleware.js';
@@ -507,5 +508,49 @@ router.patch('/documents/:userId/:cohortId/review', documentController.setReview
  *         description: Статус отчёта обновлён
  */
 router.patch('/documents/:userId/:cohortId/approve-report', documentController.approveReport);
+
+/**
+ * @swagger
+ * /admin/cohorts/{cohortId}/documents-overview:
+ *   get:
+ *     summary: Получить сводку по документам практикантов когорты
+ *     tags: [Admin / Overview]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Сводка по документам
+ *       404:
+ *         description: Когорта не найдена
+ */
+router.get('/:cohortId/documents-overview', cohortContextMiddleware, adminOverviewController.getDocumentsOverview);
+
+/**
+ * @swagger
+ * /admin/cohorts/{cohortId}/tasks-overview:
+ *   get:
+ *     summary: Получить сводку по задачам практикантов когорты
+ *     tags: [Admin / Overview]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Сводка по задачам
+ *       404:
+ *         description: Когорта не найдена
+ */
+router.get('/:cohortId/tasks-overview', cohortContextMiddleware, adminOverviewController.getTasksOverview);
 
 export default router;

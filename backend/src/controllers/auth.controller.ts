@@ -82,7 +82,7 @@ export const authController = {
     try {
       const { email } = req.body;
       if (!email) {
-        return res.status(400).json({ error: { message: 'Email обязателен' } });
+        throw new ValidationError('Email обязателен');
       }
 
       await authService.forgotPassword(email);
@@ -98,19 +98,16 @@ export const authController = {
       const { token, password } = req.body;
 
       if (!token || !password) {
-        return res.status(400).json({ error: { message: 'Токен и новый пароль обязательны' } });
+        throw new ValidationError('Токен и новый пароль обязательны');
       }
       if (typeof password !== 'string' || password.length < 8) {
-        return res.status(400).json({ error: { message: 'Пароль должен быть не короче 8 символов' } });
+        throw new ValidationError('Пароль должен быть не короче 8 символов');
       }
 
       await authService.resetPassword(token, password);
 
       res.json({ message: 'Пароль успешно изменён' });
     } catch (err) {
-      if (err instanceof ValidationError) {
-        return res.status(400).json({ error: { message: err.message } });
-      }
       next(err);
     }
   },

@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { documentService } from '../services/document.service.js';
 import { AuthRequest } from '../middleware/auth.middleware.js';
+import { ValidationError } from '../errors/index.js';
 
 interface MulterRequest extends AuthRequest {
   file?: any;
@@ -14,8 +15,7 @@ export const documentController = {
       const cohortId = Array.isArray(req.query.cohortId) ? req.query.cohortId[0] : req.query.cohortId;
 
       if (!applicationId || !cohortId) {
-        res.status(400).json({ error: { message: 'applicationId and cohortId are required', code: 'VALIDATION_ERROR' } });
-        return;
+        throw new ValidationError('applicationId and cohortId are required');
       }
 
       const doc = await documentService.getOrCreate(userId, cohortId as string, applicationId as string);
@@ -31,8 +31,7 @@ export const documentController = {
       const cohortId = Array.isArray(req.query.cohortId) ? req.query.cohortId[0] : req.query.cohortId;
 
       if (!cohortId) {
-        res.status(400).json({ error: { message: 'cohortId is required', code: 'VALIDATION_ERROR' } });
-        return;
+        throw new ValidationError('cohortId is required');
       }
 
       const doc = await documentService.update(userId, cohortId as string, req.body);
@@ -48,14 +47,12 @@ export const documentController = {
       const cohortId = Array.isArray(req.query.cohortId) ? req.query.cohortId[0] : req.query.cohortId;
 
       if (!cohortId) {
-        res.status(400).json({ error: { message: 'cohortId is required', code: 'VALIDATION_ERROR' } });
-        return;
+        throw new ValidationError('cohortId is required');
       }
 
       const file = req.file;
       if (!file) {
-        res.status(400).json({ error: { message: 'File is required', code: 'VALIDATION_ERROR' } });
-        return;
+        throw new ValidationError('File is required');
       }
 
       const fileUrl = `/uploads/${file.filename}`;
@@ -73,8 +70,7 @@ export const documentController = {
       const type = Array.isArray(req.params.type) ? req.params.type[0] : req.params.type;
 
       if (!cohortId) {
-        res.status(400).json({ error: { message: 'cohortId is required', code: 'VALIDATION_ERROR' } });
-        return;
+        throw new ValidationError('cohortId is required');
       }
 
       const buffer = await documentService.generate(userId, cohortId as string, type);

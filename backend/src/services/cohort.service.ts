@@ -80,7 +80,7 @@ export const cohortService = {
       throw new NotFoundError('Cohort not found');
     }
 
-    const updateData: any = { ...data };
+    const updateData: Record<string, unknown> = { ...data };
     if (data.applicationStart) updateData.applicationStart = new Date(data.applicationStart);
     if (data.applicationEnd) updateData.applicationEnd = new Date(data.applicationEnd);
     if (data.practiceStart) updateData.practiceStart = new Date(data.practiceStart);

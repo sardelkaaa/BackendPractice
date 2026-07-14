@@ -455,7 +455,12 @@ router.patch('/applications/:id/reject', applicationController.reject);
  * @swagger
  * /admin/documents/{userId}/{cohortId}/review:
  *   patch:
- *     summary: Заполнить отзыв (админ)
+ *     summary: Заполнить отзыв руководителя практики (админ)
+ *     description: |
+ *       Администратор заполняет отзыв на практиканта.
+ *       Все поля опциональны — обновляются только переданные.
+ *       Когда заполнены все поля отзыва, практиканту автоматически
+ *       приходит уведомление о готовности документа.
  *     tags: [Admin / Documents]
  *     security:
  *       - bearerAuth: []
@@ -465,14 +470,76 @@ router.patch('/applications/:id/reject', applicationController.reject);
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID практиканта
  *       - in: path
  *         name: cohortId
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID когорты
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reviewActivities:
+ *                 type: string
+ *                 description: Виды деятельности, выполненные практикантом
+ *                 example: "Разработка REST API, написание тестов, рефакторинг"
+ *               reviewCharacteristic:
+ *                 type: string
+ *                 description: Характеристика практиканта
+ *                 example: "Проявил себя как ответственный исполнитель"
+ *               reviewEmployed:
+ *                 type: string
+ *                 description: Трудоустройство (планируется / не планируется)
+ *                 example: "Рекомендован к трудоустройству"
+ *               reviewNextPractice:
+ *                 type: string
+ *                 description: Рекомендации на следующую практику
+ *                 example: "Рекомендуется углублённое изучение DevOps"
+ *               reviewEmploymentOffer:
+ *                 type: string
+ *                 description: Предложение о работе
+ *                 example: "Предложена позиция Junior Developer"
+ *               reviewSuggestions:
+ *                 type: string
+ *                 description: Замечания и предложения
+ *                 example: "Уделить внимание архитектуре микросервисов"
+ *               reviewGrade:
+ *                 type: string
+ *                 description: Оценка за практику
+ *                 example: "Отлично"
  *     responses:
  *       200:
  *         description: Отзыв сохранён
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 reviewActivities:
+ *                   type: string
+ *                 reviewCharacteristic:
+ *                   type: string
+ *                 reviewEmployed:
+ *                   type: string
+ *                 reviewNextPractice:
+ *                   type: string
+ *                 reviewEmploymentOffer:
+ *                   type: string
+ *                 reviewSuggestions:
+ *                   type: string
+ *                 reviewGrade:
+ *                   type: string
+ *       400:
+ *         description: Ошибка валидации
+ *       404:
+ *         description: Документ не найден
  */
 router.patch('/documents/:userId/:cohortId/review', documentController.setReview);
 

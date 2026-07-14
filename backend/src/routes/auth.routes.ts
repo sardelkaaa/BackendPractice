@@ -23,6 +23,9 @@ const router = Router();
  *             required:
  *               - email
  *               - password
+ *               - firstName
+ *               - lastName
+ *               - role
  *             properties:
  *               email:
  *                 type: string
@@ -33,6 +36,17 @@ const router = Router();
  *                 format: password
  *                 minLength: 8
  *                 example: strongpassword123
+ *               firstName:
+ *                 type: string
+ *                 example: Иван
+ *               lastName:
+ *                 type: string
+ *                 example: Иванов
+ *               role:
+ *                 type: string
+ *                 enum: [PRACTICANT, ADMIN]
+ *                 description: Роль пользователя. `PRACTICANT` — практикант (студент), `ADMIN` — администратор.
+ *                 example: PRACTICANT
  *     responses:
  *       201:
  *         description: Пользователь успешно зарегистрирован
@@ -43,15 +57,26 @@ const router = Router();
  *               properties:
  *                 id:
  *                   type: string
+ *                   example: "clxxyz123"
  *                 email:
  *                   type: string
+ *                   example: user@example.com
  *                 role:
  *                   type: string
- *                   example: "APPLICANT"
+ *                   example: "PRACTICANT"
  *                 token:
  *                   type: string
+ *                   description: "JWT для авторизации (передавать в заголовок Authorization: Bearer <token>)"
+ *                   example: "eyJhbGciOiJIUzI1NiIs..."
  *                 message:
  *                   type: string
+ *                   example: "Registration successful. Please check your email to verify your account."
+ *               required:
+ *                 - id
+ *                 - email
+ *                 - role
+ *                 - token
+ *                 - message
  *       400:
  *         description: Ошибка валидации входных данных
  *       409:
@@ -91,17 +116,46 @@ router.post('/register', authController.register);
  *           application/json:
  *             schema:
  *               type: object
+ *               required:
+ *                 - user
+ *                 - token
  *               properties:
- *                 id:
- *                   type: string
- *                 email:
- *                   type: string
- *                 role:
- *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "clxxyz123"
+ *                     email:
+ *                       type: string
+ *                       example: user@example.com
+ *                     role:
+ *                       type: string
+ *                       enum: [PRACTICANT, ADMIN]
+ *                       example: "PRACTICANT"
+ *                     isEmailVerified:
+ *                       type: boolean
+ *                       example: true
  *                 token:
  *                   type: string
+ *                   description: "JWT. Передавать в заголовок Authorization: Bearer <token> для всех защищённых эндпоинтов."
+ *                   example: "eyJhbGciOiJIUzI1NiIs..."
  *       401:
  *         description: Неверный email/пароль или почта не подтверждена
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: "Неверный email или пароль"
+ *                     code:
+ *                       type: string
+ *                       example: "UNAUTHORIZED"
  */
 router.post('/login', authController.login);
 

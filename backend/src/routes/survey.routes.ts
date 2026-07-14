@@ -33,18 +33,57 @@ router.use(requireRole(['ADMIN']));
  *             properties:
  *               label:
  *                 type: string
+ *                 description: Отображаемый текст поля
+ *                 example: "Предпочитаемое направление"
  *               type:
  *                 type: string
  *                 enum: [text, select]
+ *                 description: |
+ *                   Тип поля. `text` — свободный ввод, `select` — выбор из списка
+ *                   (тогда заполняется `options`).
+ *                 example: text
  *               options:
  *                 type: string
+ *                 description: |
+ *                   Для `select` — варианты выбора, разделённые запятыми.
+ *                   Для `text` — не используется.
+ *                 example: "Frontend, Backend, DevOps, Аналитика"
  *               order:
  *                 type: integer
+ *                 description: Порядковый номер поля в анкете (сортировка asc)
+ *                 example: 1
  *               isRequired:
  *                 type: boolean
+ *                 description: Обязательность поля
+ *                 default: true
+ *                 example: true
  *     responses:
  *       201:
  *         description: Поле создано
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 cohortId:
+ *                   type: string
+ *                 label:
+ *                   type: string
+ *                 type:
+ *                   type: string
+ *                 options:
+ *                   type: string
+ *                   nullable: true
+ *                 order:
+ *                   type: integer
+ *                 isRequired:
+ *                   type: boolean
+ *       400:
+ *         description: Ошибка валидации
+ *       404:
+ *         description: Когорта не найдена
  */
 router.post('/cohorts/:cohortId/survey-fields', cohortContextMiddleware, surveyController.create);
 

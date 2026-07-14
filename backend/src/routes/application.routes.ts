@@ -21,24 +21,81 @@ router.use(authMiddleware);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [cohortId, answers]
+ *             required:
+ *               - cohortId
+ *               - roleId
+ *               - answers
  *             properties:
  *               cohortId:
  *                 type: string
+ *                 description: ID когорты, на которую подаётся заявка
+ *                 example: "clxxyz123"
+ *               roleId:
+ *                 type: string
+ *                 description: ID выбранной роли/трека
+ *                 example: "clxxyz456"
  *               answers:
  *                 type: array
+ *                 description: |
+ *                   Ответы на поля анкеты. Массив объектов, где fieldId — ID поля
+ *                   из GET /public/cohorts/{id}/survey, value — введённое значение.
  *                 items:
  *                   type: object
+ *                   required:
+ *                     - fieldId
+ *                     - value
  *                   properties:
  *                     fieldId:
  *                       type: string
+ *                       description: ID поля анкеты
+ *                       example: "clxxyz789"
  *                     value:
  *                       type: string
+ *                       description: Значение ответа
+ *                       example: "Иванов Иван Иванович"
  *     responses:
  *       201:
  *         description: Заявка создана
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "clxxyz-app1"
+ *                 userId:
+ *                   type: string
+ *                   example: "clxxyz-user1"
+ *                 cohortId:
+ *                   type: string
+ *                   example: "clxxyz-cohort1"
+ *                 roleId:
+ *                   type: string
+ *                   example: "clxxyz-role1"
+ *                 status:
+ *                   type: string
+ *                   example: "pending"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 fieldValues:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       fieldId:
+ *                         type: string
+ *                       value:
+ *                         type: string
+ *       400:
+ *         description: Ошибка валидации (не указана роль, не заполнены обязательные поля анкеты и т.п.)
  *       409:
  *         description: Заявка в эту когорту уже подана
+ *       404:
+ *         description: Когорта или роль не найдены
  */
 router.post('/', applicationController.submit);
 

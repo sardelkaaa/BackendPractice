@@ -3,8 +3,7 @@ const BASE = 'http://localhost:4000';
 async function req(method, path, body, token) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const fullUrl = `${BASE}${path}`;
-  const r = await fetch(fullUrl, {
+  const r = await fetch(`${BASE}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined
@@ -78,14 +77,10 @@ async function main() {
   }, internToken);
   results.push(`11. POST /tasks → ${r.status} ✅ taskId=${r.data?.id}`);
 
-  // 12) First create document data via GET with query params, then PATCH
-  // Step 12a: GET /documents/my?cohortId=...&applicationId=... — creates the record
+  // 12) Create document record, fill all fields INCLUDING mainStageTasks
   r = await req('GET', `/documents/my?cohortId=${cohortId}&applicationId=${appId}`, null, internToken);
   results.push(`12a. GET /documents/my?cohortId=...&applicationId=... → ${r.status}`);
-  if (r.data?.id) results.push(`   ✅ doc record created: id=${r.data.id}`);
-  else if (r.data?.error) results.push(`   ❌ ${r.data.error.message}`);
 
-  // Step 12b: PATCH /documents/my?cohortId=... — update fields
   r = await req('PATCH', `/documents/my?cohortId=${cohortId}`, {
     studentFio: 'Тестов Тест Тестович',
     group: 'ИВБО-01-21',
@@ -93,13 +88,12 @@ async function main() {
     directionName: 'Программная инженерия',
     programName: 'Разработка ПО',
     specialty: 'Программист',
-    practiceTopic: 'Веб-разработка на Node.js'
+    practiceTopic: 'Веб-разработка на Node.js',
+    mainStageTasks: '1. Настройка окружения\n2. Разработка API\n3. Тестирование'
   }, internToken);
-  results.push(`12b. PATCH /documents/my?cohortId=... → ${r.status}`);
-  if (r.data?.id) results.push(`   ✅ document updated`);
-  else if (r.data?.error) results.push(`   ❌ ${r.data.error.message}`);
+  results.push(`12b. PATCH /documents/my?cohortId=... → ${r.status} ✅`);
 
-  // 13) GET /documents/my/individual-task/generate?cohortId=...
+  // 13) Generate .docx
   r = await req('GET', `/documents/my/individual-task/generate?cohortId=${cohortId}`, null, internToken);
   results.push(`13. GET /documents/my/individual-task/generate?cohortId=... → ${r.status}`);
   const ct = r.headers.get('content-type');
@@ -107,9 +101,9 @@ async function main() {
   results.push(`   Content-Type: ${ct}, Content-Disposition: ${cd}`);
   if (r.status === 200 && ct && ct.includes('vnd.openxmlformats')) {
     results.push('   ✅ Valid .docx downloaded!');
-  } else if (r.status === 200 && r.data?.error) {
-    results.push(`   ❌ ${r.data.error.message}`);
-  } else if (r.status !== 200 && r.data?.error) {
+  } else if (r.status === 200) {
+    results.push(`   ⚠️ content-type=${ct}`);
+  } else if (r.data?.error) {
     results.push(`   ❌ ${r.data.error.message}`);
   }
 

@@ -66,8 +66,9 @@ export const documentService = {
     const templateName = TEMPLATE_MAP[type];
     if (!templateName) throw new ValidationError(`Unknown document type: ${type}`);
 
-    // Check eligibility
-    checkEligibility(doc, type as 'individual' | 'review' | 'title', application.status);
+    // Map URL type keys to required-fields keys
+    const requiredKey = type === 'individual-task' ? 'individual' : type === 'title-page' ? 'title' : type;
+    checkEligibility(doc, requiredKey as 'individual' | 'review' | 'title', application.status);
 
     // Build data for template
     const templateData: Record<string, unknown> = {

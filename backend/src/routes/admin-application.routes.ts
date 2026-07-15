@@ -6,7 +6,7 @@ import { requireRole } from '../middleware/requireRole.js';
 const router = Router();
 
 router.use(authMiddleware);
-router.use(requireRole(['admin']));
+router.use(requireRole(['ADMIN']));
 
 /**
  * @swagger

@@ -89,6 +89,10 @@ export const documentService = {
       reviewGrade: doc.reviewGrade,
       practiceStart: cohort.practiceStart.toISOString().split('T')[0],
       practiceEnd: cohort.practiceEnd.toISOString().split('T')[0],
+      // Вычисляемые даты для шаблона
+      practiceStartPlus7: new Date(cohort.practiceStart.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      practiceStartPlus23: new Date(cohort.practiceStart.getTime() + 23 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      practiceEndMinus3: new Date(cohort.practiceEnd.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     };
 
     return docxService.generate(templateName, templateData);

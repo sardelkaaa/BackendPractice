@@ -12,6 +12,7 @@ import applicationRoutes from './routes/application.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import documentRoutes from './routes/document.routes.js';
 import taskCardRoutes from './routes/taskCard.routes.js';
+import adminApplicationRoutes from './routes/admin-application.routes.js';
 
 export const app = express();
 
@@ -30,5 +31,6 @@ app.use('/applications', applicationRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/documents', documentRoutes);
 app.use('/tasks', taskCardRoutes);
+app.use('/admin/applications', adminApplicationRoutes);
 
 app.use(errorHandler);

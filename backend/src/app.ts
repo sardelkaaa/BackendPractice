@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { errorHandler } from './middleware/error.middleware.js';
 import helmet from 'helmet';
 import healthRoutes from './routes/health.routes.js';
@@ -17,9 +18,12 @@ import adminDocumentRoutes from './routes/admin-document.routes.js';
 
 export const app = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 setupSwagger(app);
 

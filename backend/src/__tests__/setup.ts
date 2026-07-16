@@ -79,6 +79,8 @@ vi.mock('../lib/mail.service.js', () => ({
     createApplicationApprovedEmail: vi.fn().mockReturnValue({}),
     createApplicationRejectedEmail: vi.fn().mockReturnValue({}),
     createDocumentReadyEmail: vi.fn().mockReturnValue({}),
+    createDocumentRejectedEmail: vi.fn().mockReturnValue({}),
+    createDocumentSubmittedEmail: vi.fn().mockReturnValue({}),
   },
 }));
 

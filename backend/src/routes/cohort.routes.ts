@@ -5,6 +5,7 @@ import { testTaskController } from '../controllers/testTask.controller.js';
 import { applicationController } from '../controllers/application.controller.js';
 import { documentController } from '../controllers/document.controller.js';
 import { adminOverviewController } from '../controllers/adminOverview.controller.js';
+import { taskCardController } from '../controllers/taskCard.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/requireRole.js';
 import { cohortContextMiddleware } from '../middleware/cohortContext.middleware.js';
@@ -545,39 +546,6 @@ router.patch('/documents/:userId/:cohortId/review', documentController.setReview
 
 /**
  * @swagger
- * /admin/documents/{userId}/{cohortId}/approve-report:
- *   patch:
- *     summary: Подтвердить отчёт (админ)
- *     tags: [Admin / Documents]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: cohortId
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               approved:
- *                 type: boolean
- *     responses:
- *       200:
- *         description: Статус отчёта обновлён
- */
-router.patch('/documents/:userId/:cohortId/approve-report', documentController.approveReport);
-
-/**
- * @swagger
  * /admin/cohorts/{cohortId}/documents-overview:
  *   get:
  *     summary: Получить сводку по документам практикантов когорты
@@ -619,5 +587,73 @@ router.get('/:cohortId/documents-overview', cohortContextMiddleware, adminOvervi
  *         description: Когорта не найдена
  */
 router.get('/:cohortId/tasks-overview', cohortContextMiddleware, adminOverviewController.getTasksOverview);
+
+/**
+ * @swagger
+ * /admin/cohorts/{cohortId}/tasks-grid:
+ *   get:
+ *     summary: Получить сетку задач всех студентов (админ)
+ *     description: |
+ *       Возвращает задачи всех студентов когорты на указанную неделю,
+ *       сгруппированные по участникам с их ФИО.
+ *     tags: [Admin / Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: weekStart
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2026-06-01"
+ *     responses:
+ *       200:
+ *         description: Сетка задач всех студентов
+ *       404:
+ *         description: Когорта не найдена
+ */
+router.get('/:cohortId/tasks-grid', cohortContextMiddleware, taskCardController.getTasksGrid);
+
+/**
+ * @swagger
+ * /admin/cohorts/{cohortId}/participants:
+ *   get:
+ *     summary: Получить список участников когорты (админ)
+ *     description: Возвращает список практикантов с их ФИО и группой.
+ *     tags: [Admin / Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cohortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Список участников
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   userId:
+ *                     type: string
+ *                   userName:
+ *                     type: string
+ *                   group:
+ *                     type: string
+ *       404:
+ *         description: Когорта не найдена
+ */
+router.get('/:cohortId/participants', cohortContextMiddleware, taskCardController.getParticipants);
 
 export default router;

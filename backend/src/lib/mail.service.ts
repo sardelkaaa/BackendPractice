@@ -277,6 +277,7 @@ class MailService {
       'individual-task': 'Индивидуальное задание',
       'title-page': 'Титульный лист',
       'review': 'Отзыв',
+      'report': 'Отчёт',
     };
 
     const label = documentLabels[documentType] || documentType;
@@ -297,6 +298,69 @@ class MailService {
         actionUrl: dashboardLink,
       }),
       text: `Документ "${label}" готов к скачиванию.\nПерейти: ${dashboardLink}`,
+    };
+  }
+
+  createDocumentRejectedEmail(user: User, documentType: string, comment: string): EmailOptions {
+    const dashboardLink = `${process.env.FRONTEND_URL}/dashboard`;
+
+    const documentLabels: Record<string, string> = {
+      'individual-task': 'Индивидуальное задание',
+      'title-page': 'Титульный лист',
+      'review': 'Отзыв',
+      'report': 'Отчёт',
+    };
+
+    const label = documentLabels[documentType] || documentType;
+
+    const bodyHtml = `
+      <p style="margin:0 0 14px 0;">Документ <strong>${label}</strong> отклонён.</p>
+      <p style="margin:0 0 14px 0;">Комментарий администратора: ${comment}</p>
+      <p style="margin:0;">Пожалуйста, исправьте замечания и отправьте документ повторно.</p>
+    `;
+
+    return {
+      to: user.email,
+      subject: `${label} отклонён — Практика`,
+      html: renderLayout({
+        eyebrow: 'Документ отклонён',
+        title: label,
+        bodyHtml,
+        actionLabel: 'Перейти в кабинет',
+        actionUrl: dashboardLink,
+      }),
+      text: `Документ "${label}" отклонён.\nКомментарий: ${comment}\nПерейти: ${dashboardLink}`,
+    };
+  }
+
+  createDocumentSubmittedEmail(user: User, documentType: string): EmailOptions {
+    const dashboardLink = `${process.env.FRONTEND_URL}/admin/dashboard`;
+
+    const documentLabels: Record<string, string> = {
+      'individual-task': 'Индивидуальное задание',
+      'title-page': 'Титульный лист',
+      'review': 'Отзыв',
+      'report': 'Отчёт',
+    };
+
+    const label = documentLabels[documentType] || documentType;
+
+    const bodyHtml = `
+      <p style="margin:0 0 14px 0;">Студент <strong>${user.email}</strong> отправил документ <strong>${label}</strong> на проверку.</p>
+      <p style="margin:0;">Перейдите в панель администратора для проверки.</p>
+    `;
+
+    return {
+      to: user.email,
+      subject: `${label} отправлен на проверку — Практика`,
+      html: renderLayout({
+        eyebrow: 'Документ на проверке',
+        title: `${label} отправлен на проверку`,
+        bodyHtml,
+        actionLabel: 'Перейти в панель',
+        actionUrl: dashboardLink,
+      }),
+      text: `Студент отправил документ "${label}" на проверку.\nПерейти: ${dashboardLink}`,
     };
   }
 }

@@ -1,4 +1,5 @@
 import { taskCardRepository } from '../repositories/taskCard.repository.js';
+import { studentDocumentDataRepository } from '../repositories/studentDocumentData.repository.js';
 import { cohortRepository } from '../repositories/cohort.repository.js';
 import { NotFoundError, ForbiddenError, ValidationError } from '../errors/index.js';
 
@@ -71,6 +72,107 @@ export const taskCardService = {
       cohortName: cohort.name,
       workdays: workdaysWithTasks,
     };
+  },
+
+  async getTasksGrid(cohortId: string, weekStartStr: string) {
+    const cohort = await cohortRepository.findById(cohortId);
+    if (!cohort) throw new NotFoundError('Cohort not found');
+
+    const weekStart = new Date(weekStartStr);
+    if (isNaN(weekStart.getTime())) {
+      throw new ValidationError('Invalid weekStart date');
+    }
+
+    const workdays = getWeekWorkdays(weekStart);
+
+    // Filter workdays to stay within cohort practice period
+    const validWorkdays = workdays.filter(
+      (d) => d >= cohort.practiceStart && d <= cohort.practiceEnd,
+    );
+
+    if (validWorkdays.length === 0) {
+      return {
+        weekStart: weekStartStr,
+        cohortName: cohort.name,
+        participants: [],
+      };
+    }
+
+    const from = validWorkdays[0];
+    const to = validWorkdays[validWorkdays.length - 1];
+
+    // Get all tasks for the week
+    const tasks = await taskCardRepository.findByCohortAndRange(cohortId, from, to);
+
+    // Get all student document data to extract FIO
+    const allDocs = await studentDocumentDataRepository.findByCohort(cohortId);
+    const userFioMap = new Map<string, string>();
+    for (const doc of allDocs) {
+      if (doc.studentFio) {
+        userFioMap.set(doc.userId, doc.studentFio);
+      }
+    }
+
+    // Group tasks by user
+    const tasksByUser = new Map<string, typeof tasks>();
+    for (const task of tasks) {
+      const key = task.userId;
+      if (!tasksByUser.has(key)) {
+        tasksByUser.set(key, []);
+      }
+      tasksByUser.get(key)!.push(task);
+    }
+
+    // Build participants with workdays
+    const participants: any[] = [];
+    for (const [userId, userTasks] of tasksByUser) {
+      const userEmail = userTasks[0].user?.email || '';
+      const userName = userFioMap.get(userId) || userEmail;
+
+      const workdaysWithTasks = validWorkdays.map((day) => {
+        const dayStr = day.toISOString().split('T')[0];
+        const dayTasks = userTasks.filter((t) => {
+          const tDayStr = t.date.toISOString().split('T')[0];
+          return tDayStr === dayStr;
+        });
+        return {
+          date: dayStr,
+          tasks: dayTasks.map((t) => ({
+            id: t.id,
+            title: t.title,
+            description: t.description,
+            artifactLink: t.artifactLink,
+            createdAt: t.createdAt,
+            updatedAt: t.updatedAt,
+          })),
+        };
+      });
+
+      participants.push({
+        userId,
+        userName,
+        workdays: workdaysWithTasks,
+      });
+    }
+
+    return {
+      weekStart: weekStartStr,
+      cohortName: cohort.name,
+      participants,
+    };
+  },
+
+  async getParticipants(cohortId: string) {
+    const cohort = await cohortRepository.findById(cohortId);
+    if (!cohort) throw new NotFoundError('Cohort not found');
+
+    const docs = await studentDocumentDataRepository.findByCohort(cohortId);
+
+    return docs.map((doc) => ({
+      userId: doc.userId,
+      userName: doc.studentFio || 'Не указано',
+      group: doc.group || null,
+    }));
   },
 
   async create(data: {

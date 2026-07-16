@@ -45,7 +45,10 @@ export const adminOverviewService = {
           titlePageFieldsFilled: checkFieldsFilled(docRecord, TITLE_FIELDS),
           reviewFieldsFilled: checkFieldsFilled(docRecord, REVIEW_FIELDS),
           reportUploaded: docRecord ? !!docRecord.reportFileUrl : false,
-          reportAdminApproved: docRecord ? !!docRecord.reportAdminApproved : false,
+          reportStatus: docRecord ? (docRecord.reportStatus as string) || 'draft' : 'draft',
+          individualTaskStatus: docRecord ? (docRecord.individualTaskStatus as string) || 'draft' : 'draft',
+          titlePageStatus: docRecord ? (docRecord.titlePageStatus as string) || 'draft' : 'draft',
+          reviewStatus: docRecord ? (docRecord.reviewStatus as string) || 'draft' : 'draft',
           // Overall readiness per document type
           individualTaskReady: docRecord
             ? checkFieldsFilled(docRecord, INDIVIDUAL_FIELDS) && application.status === 'approved'
@@ -53,8 +56,7 @@ export const adminOverviewService = {
           reviewReady: checkFieldsFilled(docRecord, REVIEW_FIELDS),
           titlePageReady: docRecord
             ? checkFieldsFilled(docRecord, TITLE_FIELDS) &&
-              !!docRecord.reportFileUrl &&
-              !!docRecord.reportAdminApproved
+              !!docRecord.reportFileUrl
             : false,
         };
       }),

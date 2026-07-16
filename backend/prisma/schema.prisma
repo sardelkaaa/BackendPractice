@@ -150,6 +150,7 @@ model StudentDocumentData {
   practiceTopic     String?
   mainStageTasks    String?           
   
+  // Отзыв (заполняется админом)
   reviewActivities          String?
   reviewCharacteristic      String?
   reviewEmployed            String?   
@@ -158,8 +159,31 @@ model StudentDocumentData {
   reviewSuggestions         String?
   reviewGrade               String?
   
+  // Отчёт
   reportFileUrl       String?         
-  reportAdminApproved Boolean         @default(false)
+  
+  // === Индивидуальное задание ===
+  individualTaskFileUrl       String?   // URL сгенерированного файла
+  individualTaskStatus        String?   // draft, pending, approved, rejected, revised
+  individualTaskComment       String?   // Комментарий админа при отклонении
+  individualTaskAdminFileUrl  String?   // URL подписанного файла от админа
+  
+  // === Отчёт ===
+  reportStatus            String?       // draft, pending, approved, rejected, revised
+  reportComment           String?       // Комментарий админа
+  reportAdminFileUrl      String?       // URL файла с подписью/отметкой админа
+  
+  // === Титульный лист ===
+  titlePageFileUrl        String?       // URL сгенерированного титульного листа
+  titlePageStatus         String?       // draft, pending, approved, rejected, revised
+  titlePageComment        String?       // Комментарий админа
+  titlePageAdminFileUrl   String?       // URL подписанного титульного листа
+  
+  // === Отзыв ===
+  reviewFileUrl           String?       // URL сгенерированного отзыва
+  reviewStatus            String?       // draft, pending, approved, rejected, revised
+  reviewComment           String?       // Комментарий админа
+  reviewAdminFileUrl      String?       // URL подписанного отзыва
   
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
@@ -170,7 +194,6 @@ model StudentDocumentData {
   
   @@index([userId, cohortId])
   @@index([cohortId])
-  @@index([reportAdminApproved])
   @@map("student_document_data")
 }
 

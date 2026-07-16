@@ -34,13 +34,6 @@ export const studentDocumentDataRepository = {
     });
   },
 
-  async setReportApproved(id: string, approved: boolean): Promise<StudentDocumentData> {
-    return prisma.studentDocumentData.update({
-      where: { id },
-      data: { reportAdminApproved: approved },
-    });
-  },
-
   async setReviewFields(id: string, data: {
     reviewActivities?: string;
     reviewCharacteristic?: string;
@@ -54,5 +47,75 @@ export const studentDocumentDataRepository = {
       where: { id },
       data,
     });
+  },
+
+  // === NEW: Document workflow methods ===
+
+  async submitDocument(docId: string, typeField: string, fileUrl: string): Promise<StudentDocumentData> {
+    const statusField = `${typeField}Status` as keyof StudentDocumentData;
+    const fileUrlField = `${typeField}FileUrl` as keyof StudentDocumentData;
+    
+    const updateData: any = {};
+    // If previously rejected, status becomes "revised", otherwise "pending"
+    // We handle this logic in the service layer, here we just set status to pending
+    updateData[statusField] = 'pending';
+    updateData[fileUrlField] = fileUrl;
+
+    return prisma.studentDocumentData.update({
+      where: { id: docId },
+      data: updateData,
+    });
+  },
+
+  async approveDocument(docId: string, typeField: string, adminFileUrl: string, comment?: string): Promise<StudentDocumentData> {
+    const statusField = `${typeField}Status` as keyof StudentDocumentData;
+    const commentField = `${typeField}Comment` as keyof StudentDocumentData;
+    const adminFileUrlField = `${typeField}AdminFileUrl` as keyof StudentDocumentData;
+
+    const updateData: any = {};
+    updateData[statusField] = 'approved';
+    updateData[adminFileUrlField] = adminFileUrl;
+    if (comment !== undefined) {
+      updateData[commentField] = comment;
+    }
+
+    return prisma.studentDocumentData.update({
+      where: { id: docId },
+      data: updateData,
+    });
+  },
+
+  async rejectDocument(docId: string, typeField: string, comment: string): Promise<StudentDocumentData> {
+    const statusField = `${typeField}Status` as keyof StudentDocumentData;
+    const commentField = `${typeField}Comment` as keyof StudentDocumentData;
+
+    const updateData: any = {};
+    updateData[statusField] = 'rejected';
+    updateData[commentField] = comment;
+
+    return prisma.studentDocumentData.update({
+      where: { id: docId },
+      data: updateData,
+    });
+  },
+
+  async findByCohort(cohortId: string): Promise<StudentDocumentData[]> {
+    return prisma.studentDocumentData.findMany({
+      where: { cohortId },
+    });
+  },
+
+  async getDocumentStatus(doc: StudentDocumentData, typeField: string) {
+    const statusField = `${typeField}Status` as keyof StudentDocumentData;
+    const commentField = `${typeField}Comment` as keyof StudentDocumentData;
+    const fileUrlField = `${typeField}FileUrl` as keyof StudentDocumentData;
+    const adminFileUrlField = `${typeField}AdminFileUrl` as keyof StudentDocumentData;
+
+    return {
+      status: (doc[statusField] as string) || 'draft',
+      comment: (doc[commentField] as string) || null,
+      fileUrl: (doc[fileUrlField] as string) || null,
+      adminFileUrl: (doc[adminFileUrlField] as string) || null,
+    };
   },
 };

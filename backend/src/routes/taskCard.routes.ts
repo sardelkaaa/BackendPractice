@@ -84,58 +84,24 @@ router.get('/', taskCardController.getWeekGrid);
  *             properties:
  *               cohortId:
  *                 type: string
- *                 description: ID когорты
- *                 example: "clxxyz123"
  *               date:
  *                 type: string
  *                 format: date
- *                 description: Дата задачи (должна быть в пределах периода практики и рабочим днём пн–пт)
- *                 example: "2026-09-15"
  *               title:
  *                 type: string
- *                 description: Название задачи
- *                 example: "Настройка CI/CD"
  *               description:
  *                 type: string
- *                 description: Описание задачи (опционально)
- *                 example: "Настроить GitHub Actions для автоматического деплоя"
  *               artifactLink:
  *                 type: string
- *                 description: Ссылка на результат/артефакт (опционально)
- *                 example: "https://github.com/user/repo/pull/42"
  *     responses:
  *       201:
  *         description: Задача создана
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 userId:
- *                   type: string
- *                 cohortId:
- *                   type: string
- *                 date:
- *                   type: string
- *                   format: date
- *                 title:
- *                   type: string
- *                 description:
- *                   type: string
- *                 artifactLink:
- *                   type: string
  *       400:
- *         description: |
- *           Ошибка валидации:
- *           - date вне периода практики
- *           - date — выходной (сб/вс)
- *           - не указаны cohortId/date/title
+ *         description: Ошибка валидации
  *       404:
  *         description: Когорта не найдена
  *       409:
- *         description: "Задача на этот день уже существует. Уникальность: связка userId, cohortId, date."
+ *         description: Задача на этот день уже существует
  */
 router.post('/', taskCardController.create);
 
@@ -169,7 +135,7 @@ router.post('/', taskCardController.create);
  *       200:
  *         description: Задача обновлена
  *       403:
- *         description: Нет прав (не админ и не владелец)
+ *         description: Нет прав
  *       404:
  *         description: Задача не найдена
  */

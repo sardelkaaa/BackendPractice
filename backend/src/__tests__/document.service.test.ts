@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import prisma from '../db/prisma.js';
 import { documentService } from '../services/document.service.js';
+import { DocumentType } from '../types/document.types.js';
+
+// Helper to get mocked prisma methods
+const prismaMock = prisma as any;
 
 const mockDoc: any = {
   id: 'doc-1',
@@ -23,7 +27,21 @@ const mockDoc: any = {
   reviewSuggestions: null,
   reviewGrade: null,
   reportFileUrl: null,
-  reportAdminApproved: false,
+  individualTaskFileUrl: null,
+  individualTaskStatus: 'draft',
+  individualTaskComment: null,
+  individualTaskAdminFileUrl: null,
+  reportStatus: 'draft',
+  reportComment: null,
+  reportAdminFileUrl: null,
+  titlePageFileUrl: null,
+  titlePageStatus: 'draft',
+  titlePageComment: null,
+  titlePageAdminFileUrl: null,
+  reviewFileUrl: null,
+  reviewStatus: 'draft',
+  reviewComment: null,
+  reviewAdminFileUrl: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -128,13 +146,116 @@ describe('DocumentService', () => {
     });
   });
 
-  describe('approveReport', () => {
-    it('should approve report', async () => {
+  describe('submit document', () => {
+    it('should submit document and set status to pending', async () => {
       vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(mockDoc);
       vi.mocked(prisma.studentDocumentData.update).mockResolvedValueOnce({
         ...mockDoc,
-        reportAdminApproved: true,
+        individualTaskStatus: 'pending',
+        individualTaskFileUrl: '/uploads/file.docx',
       });
-    })
-  })
-})
+      // applicationRepository.findById calls prisma.application.findUnique internally
+      vi.mocked(prisma.application.findUnique).mockResolvedValueOnce(mockApplication);
+
+      const result = await documentService.submitDocument('user-1', 'cohort-1', 'individual-task', '/uploads/file.docx');
+      expect(result).toBeDefined();
+    });
+
+    it('should throw error if already pending', async () => {
+      const pendingDoc = { ...mockDoc, individualTaskStatus: 'pending' };
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(pendingDoc);
+
+      await expect(
+        documentService.submitDocument('user-1', 'cohort-1', 'individual-task', '/uploads/file.docx')
+      ).rejects.toThrow('Документ уже отправлен на проверку');
+    });
+
+    it('should throw error if already approved', async () => {
+      const approvedDoc = { ...mockDoc, individualTaskStatus: 'approved' };
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(approvedDoc);
+
+      await expect(
+        documentService.submitDocument('user-1', 'cohort-1', 'individual-task', '/uploads/file.docx')
+      ).rejects.toThrow('Документ уже подтверждён');
+    });
+  });
+
+  describe('approve document', () => {
+    it('should approve pending document', async () => {
+      const pendingDoc = { ...mockDoc, individualTaskStatus: 'pending' };
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(pendingDoc);
+      vi.mocked(prisma.studentDocumentData.update).mockResolvedValueOnce({
+        ...pendingDoc,
+        individualTaskStatus: 'approved',
+        individualTaskAdminFileUrl: '/uploads/signed.docx',
+      });
+      vi.mocked(prisma.application.findUnique).mockResolvedValueOnce(mockApplication);
+
+      const result = await documentService.approveDocument('user-1', 'cohort-1', 'individual-task', '/uploads/signed.docx');
+      // We check the update was called - since the result is mocked
+      expect(result).toBeDefined();
+    });
+
+    it('should throw error if document is not pending', async () => {
+      const draftDoc = { ...mockDoc, individualTaskStatus: 'draft' };
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(draftDoc);
+
+      await expect(
+        documentService.approveDocument('user-1', 'cohort-1', 'individual-task', '/uploads/signed.docx')
+      ).rejects.toThrow('Документ не находится на проверке');
+    });
+  });
+
+  describe('reject document', () => {
+    it('should reject pending document with comment', async () => {
+      const pendingDoc = { ...mockDoc, individualTaskStatus: 'pending' };
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(pendingDoc);
+      vi.mocked(prisma.studentDocumentData.update).mockResolvedValueOnce({
+        ...pendingDoc,
+        individualTaskStatus: 'rejected',
+        individualTaskComment: 'Нужно исправить',
+      });
+      vi.mocked(prisma.application.findUnique).mockResolvedValueOnce(mockApplication);
+
+      const result = await documentService.rejectDocument('user-1', 'cohort-1', 'individual-task', 'Нужно исправить');
+      expect(result).toBeDefined();
+    });
+
+    it('should throw error if no comment provided', async () => {
+      await expect(
+        documentService.rejectDocument('user-1', 'cohort-1', 'individual-task', '')
+      ).rejects.toThrow('Комментарий обязателен при отклонении');
+    });
+
+    it('should throw error if document is not pending', async () => {
+      const draftDoc = { ...mockDoc, individualTaskStatus: 'draft' };
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(draftDoc);
+
+      await expect(
+        documentService.rejectDocument('user-1', 'cohort-1', 'individual-task', 'Нужно исправить')
+      ).rejects.toThrow('Документ не находится на проверке');
+    });
+  });
+
+  describe('getStatus', () => {
+    it('should return document status', async () => {
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(mockDoc);
+
+      const result = await documentService.getStatus('user-1', 'cohort-1', 'individual-task');
+      expect(result.type).toBe('individual-task');
+      expect(result.status).toBeDefined();
+    });
+  });
+
+  describe('getMyDocuments', () => {
+    it('should return all document statuses', async () => {
+      vi.mocked(prisma.studentDocumentData.findFirst).mockResolvedValueOnce(mockDoc);
+
+      const result = await documentService.getMyDocuments('user-1', 'cohort-1');
+      expect(result.documents).toHaveLength(4);
+      expect(result.documents.map((d: any) => d.type)).toEqual(
+        expect.arrayContaining(['individual-task', 'report', 'title-page', 'review'])
+      );
+    });
+  });
+});

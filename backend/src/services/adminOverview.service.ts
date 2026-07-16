@@ -16,6 +16,19 @@ function checkFieldsFilled(doc: Record<string, unknown> | null, fields: string[]
   });
 }
 
+function getUserNameFromApplication(application: any): string {
+  // Extract from fieldValues where field label is "ФИО"
+  const fioField = application.fieldValues?.find(
+    (fv: any) => fv.field?.label?.toLowerCase().includes('фио')
+  );
+  if (fioField?.value) {
+    return fioField.value;
+  }
+
+  // Last resort: use email
+  return application.user?.email || '';
+}
+
 export const adminOverviewService = {
   async getDocumentsOverview(cohortId: string) {
     const cohort = await cohortRepository.findById(cohortId);
@@ -34,17 +47,21 @@ export const adminOverviewService = {
 
         // If no document data exists yet, treat as empty
         const docRecord = (doc ? doc : null) as Record<string, unknown> | null;
+        const userName = getUserNameFromApplication(application);
+        const reportFileUrl = docRecord ? (docRecord.reportFileUrl as string) || null : null;
 
         return {
           userId: application.user.id,
           userEmail: application.user.email,
+          userName,
           roleId: application.roleId,
           status: application.status,
           docExists: !!doc,
+          reportFileUrl,
           individualTaskFieldsFilled: checkFieldsFilled(docRecord, INDIVIDUAL_FIELDS),
           titlePageFieldsFilled: checkFieldsFilled(docRecord, TITLE_FIELDS),
           reviewFieldsFilled: checkFieldsFilled(docRecord, REVIEW_FIELDS),
-          reportUploaded: docRecord ? !!docRecord.reportFileUrl : false,
+          reportUploaded: !!reportFileUrl,
           reportStatus: docRecord ? (docRecord.reportStatus as string) || 'draft' : 'draft',
           individualTaskStatus: docRecord ? (docRecord.individualTaskStatus as string) || 'draft' : 'draft',
           titlePageStatus: docRecord ? (docRecord.titlePageStatus as string) || 'draft' : 'draft',

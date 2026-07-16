@@ -200,13 +200,17 @@ export const taskCardService = {
       throw new ValidationError('Tasks can only be created for workdays (Mon-Fri)');
     }
 
+    // Convert empty strings to undefined to avoid Prisma errors
+    const description = data.description?.trim() || undefined;
+    const artifactLink = data.artifactLink?.trim() || undefined;
+
     return taskCardRepository.create({
       userId: data.userId,
       cohortId: data.cohortId,
       date: taskDate,
       title: data.title,
-      description: data.description,
-      artifactLink: data.artifactLink,
+      description,
+      artifactLink,
     });
   },
 

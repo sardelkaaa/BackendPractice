@@ -17,9 +17,6 @@ export const adminDocumentController = {
       }
 
       const { fileUrl, comment } = req.body;
-      if (!fileUrl) {
-        throw new ValidationError('fileUrl (подписанный файл) обязателен');
-      }
 
       const doc = await documentService.approveDocument(userId, cohortId, type as DocumentType, fileUrl, comment);
       res.json(doc);

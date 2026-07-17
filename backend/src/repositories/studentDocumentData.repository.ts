@@ -67,14 +67,16 @@ export const studentDocumentDataRepository = {
     });
   },
 
-  async approveDocument(docId: string, typeField: string, adminFileUrl: string, comment?: string): Promise<StudentDocumentData> {
+  async approveDocument(docId: string, typeField: string, adminFileUrl?: string, comment?: string): Promise<StudentDocumentData> {
     const statusField = `${typeField}Status` as keyof StudentDocumentData;
     const commentField = `${typeField}Comment` as keyof StudentDocumentData;
     const adminFileUrlField = `${typeField}AdminFileUrl` as keyof StudentDocumentData;
 
     const updateData: any = {};
     updateData[statusField] = 'approved';
-    updateData[adminFileUrlField] = adminFileUrl;
+    if (adminFileUrl !== undefined) {
+      updateData[adminFileUrlField] = adminFileUrl;
+    }
     if (comment !== undefined) {
       updateData[commentField] = comment;
     }

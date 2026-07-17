@@ -191,7 +191,7 @@ export const documentService = {
     return updated;
   },
 
-  async approveDocument(userId: string, cohortId: string, type: DocumentType, adminFileUrl: string, comment?: string) {
+  async approveDocument(userId: string, cohortId: string, type: DocumentType, adminFileUrl?: string, comment?: string) {
     const doc = await studentDocumentDataRepository.findByUserAndCohort(userId, cohortId);
     if (!doc) throw new NotFoundError('Document data not found');
 
